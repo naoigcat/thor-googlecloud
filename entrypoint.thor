@@ -27,6 +27,12 @@ module Cloud
   end
 end
 
+class Pathname
+  def normalized
+    parent.join(to_path.normalized.tap(&method(:rename)))
+  end
+end
+
 class String
   def normalized
     unicode_normalize(:nfc)
