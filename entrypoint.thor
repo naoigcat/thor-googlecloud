@@ -27,4 +27,10 @@ module Cloud
   end
 end
 
+class String
+  def normalized
+    unicode_normalize(:nfc)
+  end
+end
+
 Entrypoint.start
