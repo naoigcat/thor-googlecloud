@@ -18,12 +18,18 @@ module Cloud
     exec "gcloud auth revoke && rm -fr /root/.config/gcloud"
   end
 
-  def exec(command, mode = "r", opt = {}, &block)
-    system("sshpass -p secret ssh -o StrictHostKeyChecking=no root@googlecloud #{command.shellescape}")
+  def exec(command, _mode = "r", _opt = {}, &_block)
+    system("#{sshpass} #{command.shellescape}")
   end
 
   def pipe(command, mode = "r", opt = {}, &block)
-    IO.popen("sshpass -p secret ssh -o StrictHostKeyChecking=no root@googlecloud #{command.shellescape}".tap(&method(:puts)), mode, opt, &block)
+    IO.popen("#{sshpass} #{command.shellescape}".tap(&method(:puts)), mode, opt, &block)
+  end
+
+  private
+
+  def sshpass
+    "sshpass -p secret ssh -o StrictHostKeyChecking=no root@googlecloud"
   end
 end
 
