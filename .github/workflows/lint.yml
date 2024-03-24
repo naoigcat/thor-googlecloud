@@ -1,0 +1,18 @@
+name: Lint by RuboCop
+
+on:
+  push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: RuboCop
+        uses: docker://naoigcat/rubocop:latest
+        with:
+          entrypoint: /usr/local/bundle/bin/rubocop
+          args: -d -E
