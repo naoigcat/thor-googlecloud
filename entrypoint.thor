@@ -4,26 +4,32 @@ Bundler.require
 Pathname.glob("lib/**.rb").each(&method(:load))
 
 module Cloud
-  require "shellwords"
+  class << self
+    require "shellwords"
 
-  module_function
+    def login
+      return unless pipe("gcloud config get account", &:read).empty?
+      exec "gcloud auth login"
+    end
 
-  def login
-    return unless pipe("gcloud config get account", &:read).empty?
-    exec "gcloud auth login"
-  end
+    def logout
+      return if pipe("gcloud config get account", &:read).empty?
+      exec "gcloud auth revoke && rm -fr /root/.config/gcloud"
+    end
 
-  def logout
-    return if pipe("gcloud config get account", &:read).empty?
-    exec "gcloud auth revoke && rm -fr /root/.config/gcloud"
-  end
+    def exec(command, _mode = "r", _opt = {}, &_block)
+      system("#{sshpass} #{command.shellescape}")
+    end
 
-  def exec(command, mode = "r", opt = {}, &block)
-    system("sshpass -p secret ssh -o StrictHostKeyChecking=no root@googlecloud #{command.shellescape}")
-  end
+    def pipe(command, mode = "r", opt = {}, &block)
+      IO.popen("#{sshpass} #{command.shellescape}".tap(&method(:puts)), mode, opt, &block)
+    end
 
-  def pipe(command, mode = "r", opt = {}, &block)
-    IO.popen("sshpass -p secret ssh -o StrictHostKeyChecking=no root@googlecloud #{command.shellescape}".tap(&method(:puts)), mode, opt, &block)
+    private
+
+    def sshpass
+      "sshpass -p secret ssh -o StrictHostKeyChecking=no root@googlecloud"
+    end
   end
 end
 
