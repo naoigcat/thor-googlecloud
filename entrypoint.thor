@@ -17,12 +17,12 @@ module Cloud
       exec "gcloud auth revoke && rm -fr /root/.config/gcloud"
     end
 
-    def exec(command, _mode = "r", _opt = {}, &_block)
+    def exec(command, _mode = "r", _opt = {}, &)
       system("#{sshpass} #{command.shellescape}")
     end
 
-    def pipe(command, mode = "r", opt = {}, &block)
-      IO.popen("#{sshpass} #{command.shellescape}".tap(&method(:puts)), mode, opt, &block)
+    def pipe(command, mode = "r", opt = {}, &)
+      IO.popen("#{sshpass} #{command.shellescape}".tap(&method(:puts)), mode, opt, &)
     end
 
     private
