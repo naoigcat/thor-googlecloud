@@ -1,0 +1,13 @@
+[tasks.fix]
+description = "Run RuboCop autocorrect with the configured Ruby version"
+run = '''
+RUBY_VERSION="ruby$(awk '/TargetRubyVersion/ {print $2}' .rubocop.yml)"
+docker run --rm -v "$(pwd):$(pwd)" -w "$(pwd)" "naoigcat/rubocop:${RUBY_VERSION}" --debug --autocorrect-all
+'''
+
+[tasks.lint]
+description = "Run RuboCop lint with the configured Ruby version"
+run = '''
+RUBY_VERSION="ruby$(awk '/TargetRubyVersion/ {print $2}' .rubocop.yml)"
+docker run --rm -v "$(pwd):$(pwd)" -w "$(pwd)" "naoigcat/rubocop:${RUBY_VERSION}" --debug --extra-details
+'''
