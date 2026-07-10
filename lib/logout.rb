@@ -1,6 +1,9 @@
-class Entrypoint < Thor
-  desc "logout", "Logout from Google Cloud"
-  def logout
-    Cloud.logout
+require_relative "cloud"
+
+module Cloud
+  class Logout
+    def self.call
+      Cloud.logout
+    end
   end
 end

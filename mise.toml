@@ -1,13 +1,69 @@
+[tasks.normalize]
+description = "Normalize files of Cloud storage"
+usage = '''
+arg "<project>" help="Google Cloud project"
+arg "<bucket>" help="Cloud Storage bucket"
+'''
+run = '''
+set -eu
+if [ "${TASK_GOOGLECLOUD_IN_CONTAINER:-}" = "1" ] || [ -f /.dockerenv ]; then
+    ruby bin/normalize "${usage_project?}" "${usage_bucket?}"
+else
+    trap 'docker compose down' EXIT
+    docker compose build
+    docker compose run --rm -e TASK_GOOGLECLOUD_IN_CONTAINER=1 app ruby bin/normalize "${usage_project?}" "${usage_bucket?}"
+fi
+'''
+
+[tasks.upload]
+description = "Upload files to Cloud storage"
+usage = '''
+arg "<project>" help="Google Cloud project"
+'''
+run = '''
+set -eu
+if [ "${TASK_GOOGLECLOUD_IN_CONTAINER:-}" = "1" ] || [ -f /.dockerenv ]; then
+    ruby bin/upload "${usage_project?}"
+else
+    trap 'docker compose down' EXIT
+    docker compose build
+    docker compose run --rm -e TASK_GOOGLECLOUD_IN_CONTAINER=1 app ruby bin/upload "${usage_project?}"
+fi
+'''
+
+[tasks.logout]
+description = "Logout from Google Cloud"
+run = '''
+set -eu
+if [ "${TASK_GOOGLECLOUD_IN_CONTAINER:-}" = "1" ] || [ -f /.dockerenv ]; then
+    ruby bin/logout
+else
+    trap 'docker compose down' EXIT
+    docker compose build
+    docker compose run --rm -e TASK_GOOGLECLOUD_IN_CONTAINER=1 app ruby bin/logout
+fi
+'''
+
 [tasks.fix]
 description = "Run RuboCop autocorrect with the configured Ruby version"
 run = '''
+set -eu
 RUBY_VERSION="ruby$(awk '/TargetRubyVersion/ {print $2}' .rubocop.yml)"
-docker run --rm -v "$(pwd):$(pwd)" -w "$(pwd)" "naoigcat/rubocop:${RUBY_VERSION}" --debug --autocorrect-all
+if [ "${TASK_GOOGLECLOUD_IN_CONTAINER:-}" = "1" ] || [ -f /.dockerenv ]; then
+    rubocop --debug --autocorrect-all
+else
+    docker run --rm -e TASK_GOOGLECLOUD_IN_CONTAINER=1 -v "$(pwd):$(pwd)" -w "$(pwd)" "naoigcat/rubocop:${RUBY_VERSION}" --debug --autocorrect-all
+fi
 '''
 
 [tasks.lint]
 description = "Run RuboCop lint with the configured Ruby version"
 run = '''
+set -eu
 RUBY_VERSION="ruby$(awk '/TargetRubyVersion/ {print $2}' .rubocop.yml)"
-docker run --rm -v "$(pwd):$(pwd)" -w "$(pwd)" "naoigcat/rubocop:${RUBY_VERSION}" --debug --extra-details
+if [ "${TASK_GOOGLECLOUD_IN_CONTAINER:-}" = "1" ] || [ -f /.dockerenv ]; then
+    rubocop --debug --extra-details
+else
+    docker run --rm -e TASK_GOOGLECLOUD_IN_CONTAINER=1 -v "$(pwd):$(pwd)" -w "$(pwd)" "naoigcat/rubocop:${RUBY_VERSION}" --debug --extra-details
+fi
 '''

@@ -1,19 +1,17 @@
-#!/usr/bin/env ruby
-require "bundler"
-Bundler.require
-Pathname.glob("lib/**.rb").each(&method(:load))
+require "pathname"
+require "shellwords"
 
 module Cloud
   class << self
-    require "shellwords"
-
     def login
       return unless pipe("gcloud config get account", &:read).empty?
+
       exec "gcloud auth login"
     end
 
     def logout
       return if pipe("gcloud config get account", &:read).empty?
+
       exec "gcloud auth revoke && rm -fr /root/.config/gcloud"
     end
 
@@ -44,5 +42,3 @@ class String
     unicode_normalize(:nfc)
   end
 end
-
-Entrypoint.start

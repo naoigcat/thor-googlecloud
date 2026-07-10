@@ -5,6 +5,7 @@ Manage files of Google Cloud storage.
 ## Requirements
 
 -   Docker
+-   mise
 -   Google Cloud Account
 
 ## Usage
@@ -14,9 +15,7 @@ Manage files of Google Cloud storage.
 Run below command.
 
 ```sh
-docker compose build
-docker compose run --rm app normalize [project] [bucket]
-docker compose down
+mise run normalize [project] [bucket]
 ```
 
 ### Upload files
@@ -24,9 +23,7 @@ docker compose down
 Move files to `uploads/[bucket]` directory and run below command.
 
 ```sh
-docker compose build
-docker compose run --rm app upload [project]
-docker compose down
+mise run upload [project]
 ```
 
 ## Development
@@ -35,10 +32,10 @@ docker compose down
 
     ```sh
     docker compose build
-    docker compose run --rm --entrypoint /bin/bash app
+    docker compose run --rm app /bin/bash
     ```
 
-2.  Edit entrypoint.thor.
+2.  Edit files.
 
 3.  Run command to stop the container.
 
