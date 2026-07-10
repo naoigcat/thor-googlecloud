@@ -1,5 +1,6 @@
-require "pathname"
 require "shellwords"
+require_relative "pathname_normalization"
+require_relative "string_normalization"
 
 module Cloud
   class << self
@@ -28,17 +29,5 @@ module Cloud
     def sshpass
       "sshpass -p secret ssh -o StrictHostKeyChecking=no root@googlecloud"
     end
-  end
-end
-
-class Pathname
-  def normalized
-    parent.join(to_path.normalized.tap(&method(:rename)))
-  end
-end
-
-class String
-  def normalized
-    unicode_normalize(:nfc)
   end
 end
