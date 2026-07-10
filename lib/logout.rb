@@ -1,8 +1,10 @@
 require_relative "cloud"
 
 module Cloud
-  class Logout
-    def self.call
+  module Logout
+    module_function
+
+    def call
       Cloud.logout
     end
   end

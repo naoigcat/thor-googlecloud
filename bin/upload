@@ -4,8 +4,6 @@ require_relative "../lib/upload"
 
 project = ARGV.first
 
-unless project && ARGV.size == 1
-  abort "Usage: ruby bin/upload [project]"
-end
+abort "Usage: ruby bin/upload [project]" unless project && ARGV.size == 1
 
 Cloud::Upload.call(project)

@@ -4,8 +4,6 @@ require_relative "../lib/normalize"
 
 project, bucket = ARGV
 
-unless project && bucket && ARGV.size == 2
-  abort "Usage: ruby bin/normalize [project] [bucket]"
-end
+abort "Usage: ruby bin/normalize [project] [bucket]" unless project && bucket && ARGV.size == 2
 
 Cloud::Normalize.call(project, bucket)
