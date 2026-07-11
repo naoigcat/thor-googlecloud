@@ -3,6 +3,7 @@ require "stringio"
 require_relative "../lib/normalize"
 
 class NormalizeTest < Minitest::Test
+  # Ensure a collision found during preflight validation leaves Cloud Storage unchanged.
   def test_call_does_not_move_objects_when_normalized_names_collide
     commands = []
     queries = []

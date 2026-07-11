@@ -3,6 +3,7 @@ require "tmpdir"
 require_relative "../lib/pathname_normalization"
 
 class PathnameNormalizationTest < Minitest::Test
+  # Ensure collision-free paths are renamed without changing their contents.
   def test_normalize_all_renames_every_path_after_validation
     Dir.mktmpdir do |directory|
       source = Pathname.new(directory).join("e\u0301.txt")
@@ -15,6 +16,7 @@ class PathnameNormalizationTest < Minitest::Test
     end
   end
 
+  # Ensure preflight validation preserves both files when their normalized names collide.
   def test_normalize_all_does_not_rename_any_path_when_names_collide
     Dir.mktmpdir do |directory|
       decomposed = Pathname.new(directory).join("e\u0301.txt")
