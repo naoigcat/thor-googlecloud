@@ -1,4 +1,5 @@
 require_relative "cloud"
+require_relative "normalization_plan"
 
 module Cloud
   class Normalize
@@ -14,10 +15,12 @@ module Cloud
     def call
       Cloud.login
       Cloud.exec("gcloud config set project #{@project}")
-      Cloud.pipe("gsutil ls gs://#{@bucket}", &:readlines).map(&:chomp).reject do |file|
-        file == file.normalized
-      end.each do |file|
-        Cloud.exec("gsutil mv #{file.shellescape} #{file.normalized.shellescape}")
+      files = Cloud.pipe("gsutil ls gs://#{@bucket}/**", &:readlines).map(&:chomp)
+
+      NormalizationPlan.build(files).each do |source, target|
+        next if source == target
+
+        Cloud.exec("gsutil mv #{source.shellescape} #{target.shellescape}")
         sleep 1
       end
     end
