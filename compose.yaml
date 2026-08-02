@@ -3,8 +3,13 @@ services:
     build:
       context: .
       dockerfile_inline: |
+        FROM node:20-bookworm-slim AS markdownlint
+        RUN npm install -g markdownlint-cli2@0.22.1 --no-fund --no-audit
         FROM ruby:3.4.10-slim-bookworm
         WORKDIR /app
+        COPY --from=markdownlint /usr/local/bin/node /usr/local/bin/node
+        COPY --from=markdownlint /usr/local/bin/markdownlint-cli2 /usr/local/bin/markdownlint-cli2
+        COPY --from=markdownlint /usr/local/lib/node_modules /usr/local/lib/node_modules
         RUN apt-get update && apt-get install -y \
                 sshpass \
             && \

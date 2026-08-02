@@ -56,7 +56,7 @@ else
 fi
 '''
 
-[tasks.lint]
+[tasks.rubocop]
 description = "Run RuboCop lint with the configured Ruby version"
 run = '''
 set -eu
@@ -65,5 +65,16 @@ if [ "${TASK_GOOGLECLOUD_IN_CONTAINER:-}" = "1" ] || [ -f /.dockerenv ]; then
     rubocop --debug --extra-details
 else
     docker run --rm -e TASK_GOOGLECLOUD_IN_CONTAINER=1 -v "$(pwd):$(pwd)" -w "$(pwd)" "naoigcat/rubocop:${RUBY_VERSION}" --debug --extra-details
+fi
+'''
+
+[tasks.markdownlint]
+description = "Run markdownlint-cli2"
+run = '''
+set -eu
+if [ "${TASK_GOOGLECLOUD_IN_CONTAINER:-}" = "1" ] || [ -f /.dockerenv ]; then
+    markdownlint-cli2 --config .markdownlint-cli2.jsonc
+else
+    docker run --rm --user "$(id -u):$(id -g)" --volume "${PWD}:/workdir" davidanson/markdownlint-cli2:v0.22.1 --config .markdownlint-cli2.jsonc
 fi
 '''
