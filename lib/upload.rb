@@ -14,20 +14,36 @@ module Cloud
 
     # Build the complete rename plan before authentication so a collision cannot cause partial changes.
     def call
-      directories = Pathname.new("../uploads").expand_path(__dir__).glob("*")
-      files_by_directory = directories.to_h { |directory| [directory, directory.glob("*")] }
+      files_by_directory = upload_files_by_directory
       files = files_by_directory.values.flatten
       normalization_plan = Pathname.normalization_plan(files)
 
+      authenticate_project
+      normalized_files = files.zip(Pathname.apply_normalization(normalization_plan)).to_h
+      upload_normalized_files(files_by_directory, normalized_files)
+    end
+
+    private
+
+    # Collect every upload path up front so collision detection can see the complete set.
+    def upload_files_by_directory
+      Pathname.new("../uploads").expand_path(__dir__).glob("*")
+              .to_h { |directory| [directory, directory.glob("*")] }
+    end
+
+    # Authenticate only after the rename plan is known to be collision-free.
+    def authenticate_project
       Cloud.login
       Cloud.exec("gcloud config set project #{@project}")
-      normalized_files = files.zip(Pathname.apply_normalization(normalization_plan)).to_h
+    end
 
-      files_by_directory.each do |directory, files|
+    # Upload using the post-normalization paths while preserving each directory-to-bucket mapping.
+    def upload_normalized_files(files_by_directory, normalized_files)
+      files_by_directory.each do |directory, directory_files|
         puts directory
         bucket = directory.basename.to_path
-        files.each do |file|
-          Cloud.exec("gsutil cp \"#{normalized_files.fetch(file)}\" gs://#{bucket}")
+        directory_files.each do |file|
+          Cloud.exec("gsutil cp \"#{normalized_files[file]}\" gs://#{bucket}")
         end
       end
     end

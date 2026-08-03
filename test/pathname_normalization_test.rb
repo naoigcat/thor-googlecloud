@@ -18,14 +18,7 @@ class PathnameNormalizationTest < Minitest::Test
 
   # Ensure preflight validation preserves both files when their normalized names collide.
   def test_normalize_all_does_not_rename_any_path_when_names_collide
-    Dir.mktmpdir do |directory|
-      decomposed = Pathname.new(directory).join("e\u0301.txt")
-      composed = Pathname.new(directory).join("é.txt")
-      decomposed.write("decomposed")
-      composed.write("composed")
-
-      skip "The filesystem does not preserve distinct NFD and NFC names" if Pathname.new(directory).children.size < 2
-
+    with_colliding_paths do |decomposed, composed|
       assert_raises(NormalizationPlan::CollisionError) do
         Pathname.normalize_all([decomposed, composed])
       end
@@ -33,5 +26,27 @@ class PathnameNormalizationTest < Minitest::Test
       assert_equal "decomposed", decomposed.read
       assert_equal "composed", composed.read
     end
+  end
+
+  private
+
+  # Create both Unicode forms and skip when the filesystem collapses them.
+  def with_colliding_paths
+    Dir.mktmpdir do |directory|
+      decomposed = Pathname.new(directory).join("e\u0301.txt")
+      composed = Pathname.new(directory).join("é.txt")
+      decomposed.write("decomposed")
+      composed.write("composed")
+      skip_unless_distinct_unicode_names(directory)
+
+      yield decomposed, composed
+    end
+  end
+
+  # APFS and similar filesystems may store only one Unicode form for a name.
+  def skip_unless_distinct_unicode_names(directory)
+    return if Pathname.new(directory).children.size >= 2
+
+    skip "The filesystem does not preserve distinct NFD and NFC names"
   end
 end
